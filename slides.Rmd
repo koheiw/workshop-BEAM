@@ -1,0 +1,215 @@
+---
+title: "Longitudinal analysis of economic news using Quanteda"
+author: "Kohei Watanabe (LSE, Waseda)"
+date: "6 June 2018"
+output: 
+    ioslides_presentation:
+        css: "images/ioslides_styles.css"
+        logo: "images/quanteda-logo.png"
+        widescreen: true
+        toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    fig.width = 10.5,
+    fig.height = 5.5,
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	cache = TRUE
+)
+require(quanteda)
+```
+
+# What is Quanteda?
+
+## A tool for quantitative text analysis
+
+In quantitative text analysis, we try to discover *theoretically interesting* patterns in a corpus of texts from a social scientific point of view.
+
+- The same technology as natural language processing (NLP) but for different goals 
+    - Replication of manual reading of text is not the goal
+    - Computer scientific models are not always useful in social sciences 
+- Analytic methods vary from simple frequency analysis to neural network
+    - Complex tools are not always the best choice
+    - Training complex supervised model is usually expensive
+    - Unsupervised models inexpensive but often atheoretical
+
+## Quanteda is an R package
+
+**quanteda** is an R package for quantitative text analysis developed by a team based at the LSE.
+
+- **quanteda** offers a set of functions for quantetative text analysis
+    - See https://docs.quanteda.io/reference
+- Developed for high *consistency* (Ken) and *performance* (Kohei)
+    - Project was supported by European Research Council in the early stage
+    - Many of the core functions are written in C++ with with multi-threading
+    - Faster than any other R packages and even Pytnon package (gensim)
+- Used by leading political scientists in North America, Europe and Asia
+    - Analyze party manifestos, legislative speeches, news articles, social media etc.
+
+## Quanteda team
+
+```{r echo=FALSE, out.height="500px", out.width="auto"}
+knitr::include_graphics("images/team.png")
+```
+
+# Examples
+
+## Sentiment analysis of news
+
+- Lexicoder Sentiment Dictionary (LSD)
+    - Widely used in political communication research
+    - Created by Young and Soroka to analyze political news in North America
+    ```{r}
+    lengths(data_dictionary_LSD2015)
+    ```
+- Latent Semantic Scaling (LSS)
+    - Parameters are estimated on the corpus to increase validity
+    - Vector-space model based on generic sentimet seed words
+    
+
+## Lexicoder Sentiment Dictionary
+
+```{r}
+corp <- readRDS('/home/kohei/Dropbox/Public/data_corpus_guardian2016-10k.rds')
+
+mt <- dfm(corp, remove_punc = TRUE, remove = stopwords())
+mt_dict <- dfm_lookup(mt, data_dictionary_LSD2015[1:2])
+sent <- (mt_dict[,2] - mt_dict[,1]) / (rowSums(mt) + 1)
+
+data <- data.frame(date = docvars(mt_dict, "date"),
+                   lsd = as.numeric(scale(sent)))
+```
+
+---
+
+```{r}
+dim(mt)
+head(mt[1:6, 1:6])
+```
+
+---
+
+```{r}
+dim(mt_dict)
+head(mt_dict)
+```
+
+## Sentiment of news by LSD
+
+```{r, echo=FALSE}
+plot(data$date, data$lsd, pch = 16, col = rgb(0, 0, 0, 0.05),
+     ylim = c(-1, 1), ylab = 'sentiment')
+lines(lowess(data$date, data$lsd, f = 0.01), col = 1)
+abline(h = 0, v = as.Date("2016-06-23"), lty = c(1, 3))
+```
+
+## Latent Semantic Scaling
+
+```{r, eval=FALSE}
+devtools::install_github("koheiw/LSS")
+```
+
+```{r, message=FALSE}
+require(LSS)
+```
+
+```{r, cache=TRUE}
+toks_sent <- corp %>% 
+    corpus_reshape('sentences') %>% 
+    tokens(remove_punct = TRUE)
+mt_sent <- toks_sent %>% 
+    dfm(remove = stopwords()) %>% 
+    dfm_select('^[0-9a-zA-Z]+$', valuetype = 'regex') %>% 
+    dfm_trim(min_termfreq = 5)
+
+eco <- head(char_keyness(toks_sent, 'econom*'), 500)
+lss <- textmodel_lss(mt_sent, seedwords('pos-neg'), features = eco, cache = TRUE)
+```
+
+## Sentiment seed words
+
+```{r}
+seedwords('pos-neg')
+```
+
+## Economic sentiment words
+
+```{r}
+head(coef(lss), 20) # most positive words
+```
+
+---
+
+```{r}
+tail(coef(lss), 20) # most negative words
+```
+
+## Sentiment of news by LSS
+
+```{r, echo=FALSE}
+data$lss <- predict(lss, newdata = mt)
+plot(data$date, data$lss, pch = 16, col = rgb(0, 0, 0, 0.05),
+     ylim = c(-1, 1), ylab = 'economic sentiment')
+lines(lowess(data$date, data$lss, f = 0.01), col = 1)
+abline(h = 0, v = as.Date("2016-06-23"), lty = c(1, 3))
+```
+
+## Compare LSD and LSS
+
+```{r, echo=FALSE}
+plot(data$date, rep(0, nrow(data)), pch = 16, col = rgb(0, 0, 0, 0.05),
+     ylim = c(-1, 1), ylab = 'sentiment', type = "n")
+lines(lowess(data$date, data$lss, f = 0.01), col = 1)
+lines(lowess(data$date, data$lsd, f = 0.01), col = 2)
+abline(h = 0, v = as.Date("2016-06-23"), lty = c(1, 3))
+legend("topright", lty = 1, col = 1:2, legend = c("LSS", "LSD"))
+```
+
+## Seed words for different dimensions
+
+The sentiment seed words are widely used, but you can also make you own seed words.
+
+```{r}
+# concern
+seed_concern <- c("concern*", "worr*", "anxi*")
+
+# weakening
+seed_weakening <- c("declin*", "weak*", "retreat*")
+
+# indicator vs consequence
+seed_ecoframe <- c('рост*' = 1, 'инфляци*' = 1, 'безработиц*' = 1,
+                 # 'growth'     'inflation'   'unemployment'
+                   'рубл*' = 1, 'бедност*' = -1, 'сокращени* доходов' = -1,
+                 # 'currency'  'poverty'        'wage reduction'
+                   'забастовк*' = -1, 'увольнени* работник*' = 1, 'потер*' = -1)
+                 # 'strikes'          'layoff'                    'economic loss'
+```
+
+## Conclusions
+
+You can locate docments on sentiment or any other dimensions at low cost using LSS.
+
+- It is an ideal tool to generate time series data from news articles
+- It can be used in economic research along with macro-economic data
+
+When you use LSS, please be aware that
+
+- It requires large corpus of texts (usually 5000 or more)
+- It is affected by how texts are tokenized (punctuations, function words etc.)
+- Its individual prediction is not very accurate (compared to fully-supervided models)
+
+## To learn more about Quanteda
+
+- Quanteda Documentation: https://docs.quanteda.io
+- Quanteda Tutorials: https://tutorials.quanteda.io
+    - Overview
+    - Data import
+    - Basic operations
+    - Statistical analysis
+    - Advanced operations
+    - Scaling and classification
+- There might be a workshop on how to use Quanteda at Waseda
+
