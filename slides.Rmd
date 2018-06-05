@@ -1,6 +1,6 @@
 ---
 title: "Longitudinal analysis of economic news using Quanteda"
-author: "Kohei Watanabe (LSE, Waseda)"
+author: "Kohei Watanabe (Waseda, LSE)"
 date: "6 June 2018"
 output: 
     ioslides_presentation:
@@ -24,28 +24,17 @@ require(quanteda)
 
 # What is Quanteda?
 
-## A tool for quantitative text analysis
-
-In quantitative text analysis, we try to discover *theoretically interesting* patterns in a corpus of texts from a social scientific point of view.
-
-- The same technology as natural language processing (NLP) but for different goals 
-    - Replication of manual reading of text is not the goal
-    - Computer scientific models are not always useful in social sciences 
-- Analytic methods vary from simple frequency analysis to neural network
-    - Complex tools are not always the best choice
-    - Training complex supervised model is usually expensive
-    - Unsupervised models inexpensive but often atheoretical
-
 ## Quanteda is an R package
 
 **quanteda** is an R package for quantitative text analysis developed by a team based at the LSE.
 
-- **quanteda** offers a set of functions for quantetative text analysis
-    - See https://docs.quanteda.io/reference
-- Developed for high *consistency* (Ken) and *performance* (Kohei)
-    - Project was supported by European Research Council in the early stage
-    - Many of the core functions are written in C++ with with multi-threading
-    - Faster than any other R packages and even Pytnon package (gensim)
+- **quanteda** stands for **qu**antetative **an**alysis of **te**xtual **da**ta
+- The package offers a set of functions for quantitative text analysis
+    - See https://docs.quanteda.io/reference for the list of functions
+- Developed for high *consistency* and *performance*
+    - Many of the core functions are written in C++ with multi-threading
+    - Faster than other R packages (**tm** or **tidytext**) and even Python package (**gensim**)
+    - Works with Chinese, Japanese and Korean texts
 - Used by leading political scientists in North America, Europe and Asia
     - Analyze party manifestos, legislative speeches, news articles, social media etc.
 
@@ -54,6 +43,18 @@ In quantitative text analysis, we try to discover *theoretically interesting* pa
 ```{r echo=FALSE, out.height="500px", out.width="auto"}
 knitr::include_graphics("images/team.png")
 ```
+
+## What is quantitative text analysis
+
+In quantitative text analysis, use the same technology as natural language processing (NLP) but for different goals.
+
+- We try to discover *theoretically interesting* patterns from a social scientific point of view
+    - Replication of manual reading of text is not the goal
+    - Not easy to automate theoretically grounded analysis
+- Analytic methods vary from simple frequency analysis to neural network
+    - Supervised model is theoretical but usually expensive (e.g. deep learning)
+    - Unsupervised models inexpensive but often atheoretical (e.g. topic models)
+    - Semi-supervised models try to balance between theory and cost
 
 # Examples
 
@@ -66,14 +67,19 @@ knitr::include_graphics("images/team.png")
     lengths(data_dictionary_LSD2015)
     ```
 - Latent Semantic Scaling (LSS)
-    - Parameters are estimated on the corpus to increase validity
-    - Vector-space model based on generic sentimet seed words
-    
+    - Parameters are estimated on the corpus to increase internal validity
+    - Uses "seed words" to identify subject-specific sentiment words
 
 ## Lexicoder Sentiment Dictionary
 
+```{r, echo=FALSE}
+# Corpus is available at https://www.dropbox.com/s/kfhdoifes7z7t6j/data_corpus_guardian2016-10k.rds?dl=0
+```
+
 ```{r}
 corp <- readRDS('/home/kohei/Dropbox/Public/data_corpus_guardian2016-10k.rds')
+ndoc(corp)
+range(docvars(corp, "date"))
 
 mt <- dfm(corp, remove_punc = TRUE, remove = stopwords())
 mt_dict <- dfm_lookup(mt, data_dictionary_LSD2015[1:2])
@@ -97,7 +103,7 @@ dim(mt_dict)
 head(mt_dict)
 ```
 
-## Sentiment of news by LSD
+## Sentiment of news around Brexit vote by LSD
 
 ```{r, echo=FALSE}
 plot(data$date, data$lsd, pch = 16, col = rgb(0, 0, 0, 0.05),
@@ -112,11 +118,8 @@ abline(h = 0, v = as.Date("2016-06-23"), lty = c(1, 3))
 devtools::install_github("koheiw/LSS")
 ```
 
-```{r, message=FALSE}
+```{r, cache=TRUE, message=FALSE}
 require(LSS)
-```
-
-```{r, cache=TRUE}
 toks_sent <- corp %>% 
     corpus_reshape('sentences') %>% 
     tokens(remove_punct = TRUE)
@@ -125,7 +128,7 @@ mt_sent <- toks_sent %>%
     dfm_select('^[0-9a-zA-Z]+$', valuetype = 'regex') %>% 
     dfm_trim(min_termfreq = 5)
 
-eco <- head(char_keyness(toks_sent, 'econom*'), 500)
+eco <- head(char_keyness(toks_sent, 'econom*', window = 10), 500)
 lss <- textmodel_lss(mt_sent, seedwords('pos-neg'), features = eco, cache = TRUE)
 ```
 
@@ -147,7 +150,7 @@ head(coef(lss), 20) # most positive words
 tail(coef(lss), 20) # most negative words
 ```
 
-## Sentiment of news by LSS
+## Sentiment of news around Brexit vote by LSS
 
 ```{r, echo=FALSE}
 data$lss <- predict(lss, newdata = mt)
@@ -170,7 +173,7 @@ legend("topright", lty = 1, col = 1:2, legend = c("LSS", "LSD"))
 
 ## Seed words for different dimensions
 
-The sentiment seed words are widely used, but you can also make you own seed words.
+The sentiment seed words are already available, but you can also make you own seed words.
 
 ```{r}
 # concern
@@ -190,18 +193,18 @@ seed_ecoframe <- c('рост*' = 1, 'инфляци*' = 1, 'безработиц
 
 ## Conclusions
 
-You can locate docments on sentiment or any other dimensions at low cost using LSS.
+You can locate docents on sentiment or any other dimensions at low cost using LSS.
 
 - It is an ideal tool to generate time series data from news articles
 - It can be used in economic research along with macro-economic data
 
 When you use LSS, please be aware that
 
-- It requires large corpus of texts (usually 5000 or more)
+- It requires large corpus of texts (usually 5000 or more full-text articles)
 - It is affected by how texts are tokenized (punctuations, function words etc.)
-- Its individual prediction is not very accurate (compared to fully-supervided models)
+- Its individual prediction is not very accurate (compared to fully-supervised models)
 
-## To learn more about Quanteda
+## More about Quanteda
 
 - Quanteda Documentation: https://docs.quanteda.io
 - Quanteda Tutorials: https://tutorials.quanteda.io
@@ -211,5 +214,5 @@ When you use LSS, please be aware that
     - Statistical analysis
     - Advanced operations
     - Scaling and classification
-- There might be a workshop on how to use Quanteda at Waseda
+- There might be introductory text analysis workshop using Quanteda at Waseda
 

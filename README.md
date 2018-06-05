@@ -1,7 +1,7 @@
-# workshop-PolText2018
+# BEAM workshop
 
-Materials for a workshop on machine learning using **quanteda** at [POLTEXT Incubator Workshop](http://qta.tk.mta.hu/en/poltext-2018):
+Slides for a presentation at the [Behavioral and Experimental Analyses in Macro-finance](http://beamproject.blogspot.com/p/workshops.html):
 
-- [Presentation slides](https://cdn.rawgit.com/koheiw/workshop-PolText2018/master/slides.html)
+- [Presentation slides](https://cdn.rawgit.com/koheiw/workshop-BEAM/master/slides.html)
 - [Quanteda Documentation](https://docs.quanteda.io)
 - [Quanteda Tutorials](https://tutorials.quanteda.io)
