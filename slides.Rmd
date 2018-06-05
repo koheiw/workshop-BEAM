@@ -204,7 +204,7 @@ seed_ecoframe <- c('рост*' = 1, 'инфляци*' = 1, 'безработиц
 
 ## Conclusions
 
-You can locate docents on sentiment or any other dimensions at low cost using LSS.
+You can locate documents on sentiment or any other dimensions at low cost using LSS.
 
 - It is an ideal tool to generate time series data from news articles
 - It can be used in economic research along with macro-economic data
@@ -213,7 +213,7 @@ When you use LSS, please be aware that
 
 - It requires large corpus of texts (usually 5000 or more full-text articles)
 - It is affected by how texts are tokenized (punctuations, function words etc.)
-- Its individual prediction is not very accurate (compared to fully-supervised models)
+- Its individual prediction is not very accurate (compared to full-supervised models)
 
 ## More about Quanteda
 
