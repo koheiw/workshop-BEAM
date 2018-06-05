@@ -214,5 +214,6 @@ When you use LSS, please be aware that
     - Statistical analysis
     - Advanced operations
     - Scaling and classification
+- These slides: https://github.com/koheiw/workshop-BEAM
 - There might be introductory text analysis workshop using Quanteda at Waseda
 
