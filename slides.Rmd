@@ -50,12 +50,23 @@ In quantitative text analysis, use the same technology as natural language proce
 
 - We try to discover *theoretically interesting* patterns from a social scientific point of view
     - Replication of manual reading of text is not the goal
-    - Not easy to automate theoretically grounded analysis
-- Analytic methods vary from simple frequency analysis to neural network
-    - Supervised model is theoretical but usually expensive (e.g. deep learning)
-    - Unsupervised models inexpensive but often atheoretical (e.g. topic models)
-    - Semi-supervised models try to balance between theory and cost
+    - Social scientists are interested in specific aspects of textual data
+- Analytic methods vary from simple frequency analysis to machine learning
+    - Dictionary analysis is probably the most popular approach
+    - Machine learning is becoming more popular
+        
+## Cost-control trade off in machine learning
 
+Not easy to automate theoretically grounded analysis because of the cost-control trade off. 
+
+- Cost for training complex model is particularly high
+- Supervised model can be theoretical but usually expensive
+    - naive Bayes, Wordscores, random forest, SVM, neural network
+- Unsupervised models inexpensive but often atheoretical
+    - topic models, correspondence analysis, Wordfish
+- Semi-supervised models try to balance between theory and cost
+    - Newsmap, LSS
+        
 # Examples
 
 ## Sentiment analysis of news
