@@ -46,23 +46,23 @@ knitr::include_graphics("images/team.png")
 
 ## What is quantitative text analysis
 
-In quantitative text analysis, use the same technology as natural language processing (NLP) but for different goals.
+In quantitative text analysis, we use the same technologies as natural language processing (NLP) but for different goals.
 
 - We try to discover *theoretically interesting* patterns from a social scientific point of view
     - Replication of manual reading of text is not the goal
     - Social scientists are interested in specific aspects of textual data
 - Analytic methods vary from simple frequency analysis to machine learning
     - Dictionary analysis is probably the most popular approach
-    - Machine learning is becoming more popular
+    - Machine learning is becoming more popular these days
         
 ## Cost-control trade off in machine learning
 
 Not easy to automate theoretically grounded analysis because of the cost-control trade off. 
 
-- Cost for training complex model is particularly high
-- Supervised model can be theoretical but usually expensive
+- Complex models require a lot of data to learn
+- Supervised models can be theoretical but usually expensive
     - naive Bayes, Wordscores, random forest, SVM, neural network
-- Unsupervised models inexpensive but often atheoretical
+- Unsupervised models are inexpensive but often atheoretical
     - topic models, correspondence analysis, Wordfish
 - Semi-supervised models try to balance between theory and cost
     - Newsmap, LSS
